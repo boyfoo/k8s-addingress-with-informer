@@ -1,0 +1,46 @@
+--- # 指定需要被服务发现的Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-deployment-name01 # Deployment 控制器的自定义名称
+spec:
+  replicas: 1 # 扩容为2个
+  selector: # 该 deployment 控制器如何找到需要管理的 pod
+    matchLabels:  # 通过标签选择需要管理的 pod
+      app: nginx-test01   # 有标签 [app: nginx-test01] 的 pod 都属于这个 deployment控制器管理
+  template: # 容器的模板内容
+    metadata:
+      labels: # 该容器的标签
+        app: nginx-test01 # 需要与Deployment.selector.matchLabels的对应 才能被该deployment管理
+    spec:
+      containers:
+        - name: k8s-test-nginx-name01 # 容器的名称(随意)
+          image: nginx:1.18-alpine
+#          command: ["/abc"]
+          ports:
+            - containerPort: 80 # 容器内监听的端口(服务监听的端口)
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: nginx-service-01  # 该服务发现的名称(随意)
+spec:
+  type: ClusterIP # 只能集群内部访问
+  ports:
+    - port: 88  # 集群内部ip 88 端口 可以在集群内部机器通过 curl -I {service-ip}:88 查看结果
+      targetPort: 80  # 转发至pod容器内的端口
+  selector: # 服务发现的标签
+    app: nginx-test01 # 所有带 app:nginx-test01 的 pod 都会被该服务发现
+#---
+#apiVersion: v1
+#kind: Service
+#metadata:
+#  name: nginx-service-02 # 该服务发现的名称(随意)
+#spec:
+#  type: NodePort  # 节点形式
+#  ports:
+#    - port: 89  # 集群内部暴露的端口 NodePort类型是基于ClusterIP类型基础之上 新增了一个nodePort字段
+#      targetPort: 80  # 转发至pod容器内的端口
+#      nodePort: 31080 # 服务对外部外露的端口，外部访问此端口，然后代理到 port 字段对应的端口上，然后再代理到容器内
+#  selector:
+#    app: nginx-test01

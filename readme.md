@@ -1,0 +1,1 @@
+创建`service`中，带`annotation: ingress/http: true`注释的，自动生成ingress
