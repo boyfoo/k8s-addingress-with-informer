@@ -6,7 +6,7 @@ metadata:
 spec:
   replicas: 1 # 扩容为2个
   selector: # 该 deployment 控制器如何找到需要管理的 pod
-    matchLabels:  # 通过标签选择需要管理的 pod
+    matchLabels: # 通过标签选择需要管理的 pod
       app: nginx-test01   # 有标签 [app: nginx-test01] 的 pod 都属于这个 deployment控制器管理
   template: # 容器的模板内容
     metadata:
@@ -16,7 +16,7 @@ spec:
       containers:
         - name: k8s-test-nginx-name01 # 容器的名称(随意)
           image: nginx:1.18-alpine
-#          command: ["/abc"]
+          #          command: ["/abc"]
           ports:
             - containerPort: 80 # 容器内监听的端口(服务监听的端口)
 ---
@@ -24,6 +24,8 @@ apiVersion: v1
 kind: Service
 metadata:
   name: nginx-service-01  # 该服务发现的名称(随意)
+  annotations:
+    ingress/http: "true"
 spec:
   type: ClusterIP # 只能集群内部访问
   ports:
