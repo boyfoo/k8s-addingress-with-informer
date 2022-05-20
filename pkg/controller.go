@@ -3,6 +3,7 @@ package pkg
 import (
 	"context"
 	"fmt"
+	apicorev1 "k8s.io/api/core/v1"
 	"k8s.io/api/networking/v1beta1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -113,7 +114,7 @@ func (c *controller) syncService(key string) error {
 	// 是需要处理的service，并且没有给他新增ingress，就处理新增一个ingress
 	if ok && errors.IsNotFound(err) {
 		fmt.Println("create ingress")
-		ingress = c.constructIngress(namespaceKey, name)
+		ingress = c.constructIngress(service)
 		_, err := c.client.NetworkingV1beta1().Ingresses(namespaceKey).Create(context.TODO(), ingress, metav1.CreateOptions{})
 		if err != nil {
 			return err
@@ -147,10 +148,16 @@ func (c *controller) handlerError(item string, err error) {
 	c.queue.Forget(item)
 }
 
-func (c *controller) constructIngress(namespaceKey string, name string) *v1beta1.Ingress {
+func (c *controller) constructIngress(service *apicorev1.Service) *v1beta1.Ingress {
 	ing := &v1beta1.Ingress{}
-	ing.Name = name
-	ing.Namespace = namespaceKey
+
+	// 加入附属关系
+	ing.ObjectMeta.OwnerReferences = []metav1.OwnerReference{
+		*metav1.NewControllerRef(service, apicorev1.SchemeGroupVersion.WithKind("Service")),
+	}
+
+	ing.Name = service.Name
+	ing.Namespace = service.Namespace
 	pathType := v1beta1.PathTypePrefix
 	ing.Spec = v1beta1.IngressSpec{
 		Rules: []v1beta1.IngressRule{
@@ -163,7 +170,7 @@ func (c *controller) constructIngress(namespaceKey string, name string) *v1beta1
 								Path:     "/",
 								PathType: &pathType,
 								Backend: v1beta1.IngressBackend{
-									ServiceName: name,
+									ServiceName: service.Name,
 									ServicePort: intstr.FromInt(8080),
 								},
 							},
