@@ -162,7 +162,7 @@ func (c *controller) constructIngress(service *apicorev1.Service) *v1beta1.Ingre
 	ing.Spec = v1beta1.IngressSpec{
 		Rules: []v1beta1.IngressRule{
 			{
-				Host: "example.com",
+				Host: "prod.jtthink.com",
 				IngressRuleValue: v1beta1.IngressRuleValue{
 					HTTP: &v1beta1.HTTPIngressRuleValue{
 						Paths: []v1beta1.HTTPIngressPath{
@@ -171,7 +171,7 @@ func (c *controller) constructIngress(service *apicorev1.Service) *v1beta1.Ingre
 								PathType: &pathType,
 								Backend: v1beta1.IngressBackend{
 									ServiceName: service.Name,
-									ServicePort: intstr.FromInt(8080),
+									ServicePort: intstr.FromInt(88),
 								},
 							},
 						},

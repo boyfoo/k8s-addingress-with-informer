@@ -1,0 +1,21 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: ingress-manager
+  name: ingress-manager
+  namespace: default
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ingress-manager
+  template:
+    metadata:
+      labels:
+        app: ingress-manager
+    spec:
+      serviceAccountName: ingress-manager-sa
+      containers:
+        - image: registry.cn-hangzhou.aliyuncs.com/boyfoo/ingress-manager:1.0.0
+          name: ingress-manager
